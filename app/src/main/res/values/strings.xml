@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Kwajongen</string>
+
+    <string name="passenspel">Passenspel</string>
+    <string name="gewonnen">Gewonnen</string>
+    <string name="kapot">Kapot</string>
+    <string name="aangespeeld">Aangespeeld</string>
+    <string name="ongedaan_maken">Ongedaan maken</string>
+    <string name="wij">Wij</string>
+    <string name="zij">Zij</string>
+    <string name="nieuw_spel">Nieuw spel</string>
+    <string name="new_game_title">Startpunten:</string>
+
+</resources>
