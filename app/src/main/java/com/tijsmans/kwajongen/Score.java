@@ -68,4 +68,46 @@ public class Score {
     public void setIndex(int index) {
         mIndex = index;
     }
+
+    public boolean isFinished() {
+        return mWijScore == 0 || mZijScore == 0;
+    }
+
+    public Score calculateNewScore(String winner, boolean aangespeeld, boolean kapot) {
+        if (this.isFinished()) {
+            return null;
+        }
+
+        int newWijScore = this.getWijScore();
+        int newZijScore = this.getZijScore();
+
+        if (winner.equals("wij")) {
+            newWijScore -= 1;
+
+            if (aangespeeld)
+                newZijScore += 1;
+            if (kapot)
+                newWijScore -= 1;
+            if (this.isPassenspel())
+                newWijScore -= 1;
+        } else {
+            newZijScore -= 1;
+
+            if (aangespeeld)
+                newWijScore += 1;
+            if (kapot)
+                newZijScore -= 1;
+            if (this.isPassenspel())
+                newZijScore -= 1;
+        }
+
+        newWijScore = Math.max(newWijScore, 0);
+        newZijScore = Math.max(newZijScore, 0);
+
+        Score newScore = new Score();
+        newScore.setWijScore(newWijScore);
+        newScore.setZijScore(newZijScore);
+        newScore.setGameId(this.getGameId());
+        return newScore;
+    }
 }

@@ -5,6 +5,11 @@
     android:orientation="horizontal"
     android:weightSum="2">
 
+<!--    <nl.dionsegijn.konfetti.KonfettiView-->
+<!--        android:id="@+id/viewKonfetti"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent" />-->
+
 
 <!--    START LEFT PANE     -->
     <LinearLayout

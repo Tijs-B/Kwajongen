@@ -2,16 +2,13 @@ package com.tijsmans.kwajongen;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.widget.TextViewCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,7 +19,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import java.util.List;
 import java.util.Locale;
 
 
@@ -44,6 +40,7 @@ public class KwajongenFragment extends Fragment {
     private Button mZijGewonnen;
     private CheckBox mZijKapot;
     private CheckBox mZijAangespeeld;
+//    private KonfettiView mViewKonfetti;
 
     public static KwajongenFragment newInstance() {
         return new KwajongenFragment();
@@ -65,6 +62,8 @@ public class KwajongenFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_kwajongen, container, false);
 
+//        mViewKonfetti = (KonfettiView) view.findViewById(R.id.viewKonfetti);
+
         mWijScore = (TextView) view.findViewById(R.id.wij_score);
         mWijKapot = (CheckBox) view.findViewById(R.id.wij_kapot);
         mWijAangespeeld = (CheckBox) view.findViewById(R.id.wij_aangespeeld);
@@ -77,26 +76,15 @@ public class KwajongenFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Score latestScore = ScoreLab.get(getActivity()).getLatestScore(mGame);
-                Score newScore = new Score();
-
-                int newWijScore = latestScore.getWijScore() - 1;
-                int newZijScore = latestScore.getZijScore();
-
-                if (mWijAangespeeld.isChecked())
-                    newZijScore += 1;
-                if (mWijKapot.isChecked())
-                    newWijScore -= 1;
-                if (latestScore.isPassenspel())
-                    newWijScore -= 1;
-
-                newScore.setWijScore(newWijScore);
-                newScore.setZijScore(newZijScore);
-
-                newScore.setGameId(mGame.getId());
-
-                ScoreLab.get(getActivity()).addScore(newScore);
-
-                updateUI();
+                Score newScore = latestScore.calculateNewScore(
+                        "wij", mWijAangespeeld.isChecked(), mWijKapot.isChecked()
+                );
+                if (newScore != null) {
+                    ScoreLab.get(getActivity()).addScore(newScore);
+                    updateUI();
+                } else {
+                    openNewGameDialog();
+                }
             }
         };
 
@@ -108,26 +96,15 @@ public class KwajongenFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Score latestScore = ScoreLab.get(getActivity()).getLatestScore(mGame);
-                Score newScore = new Score();
-
-                int newWijScore = latestScore.getWijScore();
-                int newZijScore = latestScore.getZijScore() - 1;
-
-                if (mZijAangespeeld.isChecked())
-                    newWijScore += 1;
-                if (mZijKapot.isChecked())
-                    newZijScore -= 1;
-                if (latestScore.isPassenspel())
-                    newZijScore -= 1;
-
-                newScore.setWijScore(newWijScore);
-                newScore.setZijScore(newZijScore);
-
-                newScore.setGameId(mGame.getId());
-
-                ScoreLab.get(getActivity()).addScore(newScore);
-
-                updateUI();
+                Score newScore = latestScore.calculateNewScore(
+                        "zij", mZijAangespeeld.isChecked(), mZijKapot.isChecked()
+                );
+                if (newScore != null) {
+                    ScoreLab.get(getActivity()).addScore(newScore);
+                    updateUI();
+                } else {
+                    openNewGameDialog();
+                }
             }
         };
 
@@ -163,10 +140,7 @@ public class KwajongenFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_item_new_game:
-                FragmentManager manager = getFragmentManager();
-                NewGameDialogFragment dialog = NewGameDialogFragment.newInstance();
-                dialog.setTargetFragment(KwajongenFragment.this, REQUEST_NEW_GAME);
-                dialog.show(manager, DIALOG_NEW_GAME);
+                openNewGameDialog();
                 return true;
             case R.id.menu_item_history:
                 Intent intent = HistoryActivity.newIntent(getActivity(), mGame.getId());
@@ -199,7 +173,12 @@ public class KwajongenFragment extends Fragment {
         }
     }
 
-
+    private void openNewGameDialog() {
+        FragmentManager manager = getFragmentManager();
+        NewGameDialogFragment dialog = NewGameDialogFragment.newInstance();
+        dialog.setTargetFragment(KwajongenFragment.this, REQUEST_NEW_GAME);
+        dialog.show(manager, DIALOG_NEW_GAME);
+    }
 
     private void updateUI() {
 
@@ -226,6 +205,18 @@ public class KwajongenFragment extends Fragment {
         mWijAangespeeld.setChecked(false);
         mZijKapot.setChecked(false);
         mZijAangespeeld.setChecked(false);
-//        mScoreRecyclerView.scrollToPosition(ScoreLab.get(getActivity()).getNumberOfScores(mGame.getId()) - 1);
+
+//        if (latest.isFinished()) {
+//            mViewKonfetti.build()
+//                    .addColors(Color.YELLOW, Color.GREEN, Color.MAGENTA)
+//                    .setDirection(0.0, 359.0)
+//                    .setSpeed(1f, 5f)
+//                    .setFadeOutEnabled(true)
+//                    .setTimeToLive(2000L)
+//                    .addShapes(Shape.RECT, Shape.CIRCLE)
+//                    .addSizes(new Size(12, 5))
+//                    .setPosition(-50f, mViewKonfetti.getWidth() + 50f, -50f, -50f)
+//                    .streamFor(300, 5000L);
+//        }
     }
 }
