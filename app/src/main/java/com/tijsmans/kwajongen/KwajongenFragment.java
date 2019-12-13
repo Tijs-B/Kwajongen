@@ -73,7 +73,6 @@ public class KwajongenFragment extends Fragment {
         mZijKapot = (CheckBox) view.findViewById(R.id.zij_kapot);
         mZijAangespeeld = (CheckBox) view.findViewById(R.id.zij_aangespeeld);
 
-        mWijGewonnen = (Button) view.findViewById(R.id.wij_gewonnen);
         View.OnClickListener wijGewonnenOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -100,10 +99,11 @@ public class KwajongenFragment extends Fragment {
                 updateUI();
             }
         };
+
+        mWijGewonnen = (Button) view.findViewById(R.id.wij_gewonnen);
         mWijGewonnen.setOnClickListener(wijGewonnenOnClickListener);
         mWijScore.setOnClickListener(wijGewonnenOnClickListener);
 
-        mZijGewonnen = (Button) view.findViewById(R.id.zij_gewonnen);
         View.OnClickListener zijOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -130,6 +130,8 @@ public class KwajongenFragment extends Fragment {
                 updateUI();
             }
         };
+
+        mZijGewonnen = (Button) view.findViewById(R.id.zij_gewonnen);
         mZijGewonnen.setOnClickListener(zijOnClickListener);
         mZijScore.setOnClickListener(zijOnClickListener);
 
