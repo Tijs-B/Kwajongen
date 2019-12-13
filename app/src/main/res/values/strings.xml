@@ -10,5 +10,8 @@
     <string name="zij">Zij</string>
     <string name="nieuw_spel">Nieuw spel</string>
     <string name="new_game_title">Startpunten:</string>
+    <string name="geschiedenis">Geschiedenis</string>
+    <string name="history">Geschiedenis</string>
+    <string name="undo">Ongedaan maken</string>
 
 </resources>

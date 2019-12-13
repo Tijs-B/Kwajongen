@@ -240,4 +240,13 @@ public class ScoreLab {
 
         return new GameCursorWrapper(cursor);
     }
+
+    public Game getGame(UUID gameId) {
+        for (Game game : this.getGames()) {
+            if (game.getId().equals(gameId)) {
+                return game;
+            }
+        }
+        return null;
+    }
 }

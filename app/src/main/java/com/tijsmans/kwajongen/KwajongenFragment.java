@@ -9,6 +9,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.TextViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.SpannableString;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,6 +23,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import java.util.List;
+import java.util.Locale;
 
 
 public class KwajongenFragment extends Fragment {
@@ -31,16 +34,16 @@ public class KwajongenFragment extends Fragment {
     private static final int REQUEST_NEW_GAME = 0;
 
     private Game mGame;
-    private RecyclerView mScoreRecyclerView;
-    private Button mPassenspel;
-    private Button mOngedaanMaken;
+
+    private TextView mWijScore;
     private Button mWijGewonnen;
     private CheckBox mWijKapot;
     private CheckBox mWijAangespeeld;
+
+    private TextView mZijScore;
     private Button mZijGewonnen;
     private CheckBox mZijKapot;
     private CheckBox mZijAangespeeld;
-    private KwajongenFragment.ScoreAdapter mAdapter;
 
     public static KwajongenFragment newInstance() {
         return new KwajongenFragment();
@@ -62,85 +65,73 @@ public class KwajongenFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_kwajongen, container, false);
 
-        mScoreRecyclerView = (RecyclerView)
-                view.findViewById(R.id.fragment_kwajongen_recycler_view);
-        mScoreRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
-
+        mWijScore = (TextView) view.findViewById(R.id.wij_score);
         mWijKapot = (CheckBox) view.findViewById(R.id.wij_kapot);
         mWijAangespeeld = (CheckBox) view.findViewById(R.id.wij_aangespeeld);
+
+        mZijScore = (TextView) view.findViewById(R.id.zij_score);
         mZijKapot = (CheckBox) view.findViewById(R.id.zij_kapot);
         mZijAangespeeld = (CheckBox) view.findViewById(R.id.zij_aangespeeld);
 
-        mPassenspel = (Button) view.findViewById(R.id.passenspel);
-        mPassenspel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Score latestScore = ScoreLab.get(getActivity()).getLatestScore(mGame);
-                Score newScore = new Score();
-                newScore.setPassenspel(true);
-                newScore.setWijScore(latestScore.getWijScore());
-                newScore.setZijScore(latestScore.getZijScore());
-                newScore.setGameId(mGame.getId());
-                ScoreLab.get(getActivity()).addScore(newScore);
-                updateUI();
-            }
-        });
-
-        mOngedaanMaken = (Button) view.findViewById(R.id.ongedaan_maken);
-        mOngedaanMaken.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ScoreLab.get(getActivity()).deleteLatestScore(mGame);
-                updateUI();
-            }
-        });
-
         mWijGewonnen = (Button) view.findViewById(R.id.wij_gewonnen);
-        mWijGewonnen.setOnClickListener(new View.OnClickListener() {
+        View.OnClickListener wijGewonnenOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Score latestScore = ScoreLab.get(getActivity()).getLatestScore(mGame);
                 Score newScore = new Score();
+
                 int newWijScore = latestScore.getWijScore() - 1;
                 int newZijScore = latestScore.getZijScore();
+
                 if (mWijAangespeeld.isChecked())
                     newZijScore += 1;
                 if (mWijKapot.isChecked())
                     newWijScore -= 1;
                 if (latestScore.isPassenspel())
                     newWijScore -= 1;
+
                 newScore.setWijScore(newWijScore);
                 newScore.setZijScore(newZijScore);
+
                 newScore.setGameId(mGame.getId());
-                if (newScore.getWijScore() <= 0) {
-                } else if (newScore.getZijScore() <= 0) {
-                }
+
                 ScoreLab.get(getActivity()).addScore(newScore);
+
                 updateUI();
             }
-        });
+        };
+        mWijGewonnen.setOnClickListener(wijGewonnenOnClickListener);
+        mWijScore.setOnClickListener(wijGewonnenOnClickListener);
 
         mZijGewonnen = (Button) view.findViewById(R.id.zij_gewonnen);
-        mZijGewonnen.setOnClickListener(new View.OnClickListener() {
+        View.OnClickListener zijOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Score latestScore = ScoreLab.get(getActivity()).getLatestScore(mGame);
                 Score newScore = new Score();
+
                 int newWijScore = latestScore.getWijScore();
                 int newZijScore = latestScore.getZijScore() - 1;
+
                 if (mZijAangespeeld.isChecked())
                     newWijScore += 1;
                 if (mZijKapot.isChecked())
                     newZijScore -= 1;
                 if (latestScore.isPassenspel())
                     newZijScore -= 1;
+
                 newScore.setWijScore(newWijScore);
                 newScore.setZijScore(newZijScore);
+
                 newScore.setGameId(mGame.getId());
+
                 ScoreLab.get(getActivity()).addScore(newScore);
+
                 updateUI();
             }
-        });
+        };
+        mZijGewonnen.setOnClickListener(zijOnClickListener);
+        mZijScore.setOnClickListener(zijOnClickListener);
 
         updateUI();
 
@@ -175,81 +166,64 @@ public class KwajongenFragment extends Fragment {
                 dialog.setTargetFragment(KwajongenFragment.this, REQUEST_NEW_GAME);
                 dialog.show(manager, DIALOG_NEW_GAME);
                 return true;
+            case R.id.menu_item_history:
+                Intent intent = HistoryActivity.newIntent(getActivity(), mGame.getId());
+                startActivity(intent);
+                return true;
+            case R.id.menu_item_passenspel:
+                Score latestScore = ScoreLab.get(getActivity()).getLatestScore(mGame);
+
+                if (latestScore.isPassenspel()) {
+                    return true;
+                }
+
+                Score newScore = new Score();
+
+                newScore.setPassenspel(true);
+                newScore.setWijScore(latestScore.getWijScore());
+                newScore.setZijScore(latestScore.getZijScore());
+                newScore.setGameId(mGame.getId());
+
+                ScoreLab.get(getActivity()).addScore(newScore);
+
+                updateUI();
+                return true;
+            case R.id.menu_item_undo:
+                ScoreLab.get(getActivity()).deleteLatestScore(mGame);
+                updateUI();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private class ScoreHolder extends RecyclerView.ViewHolder {
 
-        private Score mScore;
-        private TextView mZijScore;
-        private TextView mWijScore;
-
-        public ScoreHolder(View itemView) {
-            super(itemView);
-
-            mZijScore = (TextView) itemView.findViewById(R.id.zij_score);
-            mWijScore = (TextView) itemView.findViewById(R.id.wij_score);
-        }
-
-        public void bindScore(Score score) {
-            mScore = score;
-            if (mScore.isPassenspel()) {
-                mZijScore.setText("-");
-                mWijScore.setText("-");
-            } else {
-                mZijScore.setText(String.valueOf(mScore.getZijScore()));
-                mWijScore.setText(String.valueOf(mScore.getWijScore()));
-            }
-        }
-    }
-
-    private class ScoreAdapter extends RecyclerView.Adapter<ScoreHolder> {
-
-        private List<Score> mScores;
-        private int mPosition;
-
-        public ScoreAdapter(List<Score> scores) {
-            mScores = scores;
-        }
-
-        @Override
-        public ScoreHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            LayoutInflater inflater = LayoutInflater.from(getActivity());
-            View view = inflater.inflate(R.layout.list_item_score, parent, false);
-            return new ScoreHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(ScoreHolder holder, int position) {
-            Score score = mScores.get(position);
-            holder.bindScore(score);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mScores.size();
-        }
-
-        public void setScores(List<Score> scores) {
-            mScores = scores;
-        }
-    }
 
     private void updateUI() {
-        List<Score> scores = ScoreLab.get(getActivity()).getScoresOfGame(mGame);
-        if (mAdapter == null) {
-            mAdapter = new ScoreAdapter(scores);
-            mScoreRecyclerView.setAdapter(mAdapter);
+
+        Score latest = ScoreLab.get(getActivity()).getLatestScore(mGame);
+
+        Locale locale = getResources().getConfiguration().locale;
+        String wijScoreString = String.format(locale, "%d", latest.getWijScore());
+        String zijScoreString = String.format(locale, "%d", latest.getZijScore());
+
+        if (latest.isPassenspel()) {
+            SpannableString content = new SpannableString(wijScoreString);
+            content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+            mWijScore.setText(content);
+
+            content = new SpannableString(zijScoreString);
+            content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+            mZijScore.setText(content);
         } else {
-            mAdapter.setScores(scores);
-            mAdapter.notifyDataSetChanged();
+            mWijScore.setText(wijScoreString);
+            mZijScore.setText(zijScoreString);
         }
+
         mWijKapot.setChecked(false);
         mWijAangespeeld.setChecked(false);
         mZijKapot.setChecked(false);
         mZijAangespeeld.setChecked(false);
-        mScoreRecyclerView.scrollToPosition(ScoreLab.get(getActivity()).getNumberOfScores(mGame.getId()) - 1);
+//        mScoreRecyclerView.scrollToPosition(ScoreLab.get(getActivity()).getNumberOfScores(mGame.getId()) - 1);
     }
 }
